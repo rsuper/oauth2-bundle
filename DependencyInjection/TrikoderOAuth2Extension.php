@@ -132,6 +132,11 @@ final class TrikoderOAuth2Extension extends Extension implements PrependExtensio
             new Definition(DateInterval::class, [$config['access_token_ttl']]),
         ]);
 
+        $authorizationServer->addMethodCall('enableGrantType', [
+            new Reference('league.oauth2.server.grant.auth_code_grant'),
+            new Definition(DateInterval::class, [$config['access_token_ttl']]),
+        ]);
+
         $this->configureGrants($container, $config);
     }
 
@@ -146,6 +151,14 @@ final class TrikoderOAuth2Extension extends Extension implements PrependExtensio
 
         $container
             ->getDefinition('league.oauth2.server.grant.refresh_token_grant')
+            ->addMethodCall('setRefreshTokenTTL', [
+                new Definition(DateInterval::class, [$config['refresh_token_ttl']]),
+            ])
+        ;
+
+        $container
+            ->getDefinition('league.oauth2.server.grant.auth_code_grant')
+            ->replaceArgument('$authCodeTTL', new Definition(DateInterval::class, [$config['auth_code_ttl']]))
             ->addMethodCall('setRefreshTokenTTL', [
                 new Definition(DateInterval::class, [$config['refresh_token_ttl']]),
             ])
@@ -193,6 +206,11 @@ final class TrikoderOAuth2Extension extends Extension implements PrependExtensio
 
         $container
             ->getDefinition('trikoder.oauth2.manager.doctrine.refresh_token_manager')
+            ->replaceArgument('$entityManager', $entityManager)
+        ;
+
+        $container
+            ->getDefinition('trikoder.oauth2.manager.doctrine.authorization_code_manager')
             ->replaceArgument('$entityManager', $entityManager)
         ;
 
